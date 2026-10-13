@@ -29,3 +29,6 @@ __pycache__/
 *.pyc
 .venv/
 
+
+# local sprint scaffolding
+.sprint/
