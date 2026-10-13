@@ -7,6 +7,11 @@
 // START Enums and Input Objects
 //==============================================================
 
+export interface CredentialsInput {
+  nickname: string;
+  password: string;
+}
+
 export interface NewRoomInput {
   gameCode: string;
   capacity: number;

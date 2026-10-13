@@ -20,6 +20,12 @@ import { MoveUserUp, MoveUserUpVariables } from 'gqlTypes/MoveUserUp';
 import { ShuffleUsers, ShuffleUsersVariables } from 'gqlTypes/ShuffleUsers';
 import { UpdateRoomInput } from 'gqlTypes/globalTypes';
 
+/** Matches the CredentialsInput type in the server GraphQL schema. */
+interface CredentialsInput {
+  nickname: string;
+  password: string;
+}
+
 const FBG_NICKNAME_KEY = 'fbgNickname2';
 const FBG_USER_TOKEN_KEY = 'fbgUserToken2';
 
@@ -52,6 +58,48 @@ export class LobbyService {
     });
 
     const jwtToken = result.data.newUser.jwtToken;
+    this.setNickname(nickname);
+    this.setJwt(jwtToken);
+
+    return jwtToken;
+  }
+
+  /** Registers a new account with a password and stores the returned token. */
+  public static async register(nickname: string, password: string): Promise<string> {
+    const client = this.getClient();
+    const result = await client.mutate<{ register: { jwtToken: string } }, { credentials: CredentialsInput }>({
+      mutation: gql`
+        mutation Register($credentials: CredentialsInput!) {
+          register(credentials: $credentials) {
+            jwtToken
+          }
+        }
+      `,
+      variables: { credentials: { nickname, password } },
+    });
+
+    const jwtToken = result.data.register.jwtToken;
+    this.setNickname(nickname);
+    this.setJwt(jwtToken);
+
+    return jwtToken;
+  }
+
+  /** Exchanges a nickname and password for a token and stores it. */
+  public static async login(nickname: string, password: string): Promise<string> {
+    const client = this.getClient();
+    const result = await client.mutate<{ login: { jwtToken: string } }, { credentials: CredentialsInput }>({
+      mutation: gql`
+        mutation Login($credentials: CredentialsInput!) {
+          login(credentials: $credentials) {
+            jwtToken
+          }
+        }
+      `,
+      variables: { credentials: { nickname, password } },
+    });
+
+    const jwtToken = result.data.login.jwtToken;
     this.setNickname(nickname);
     this.setJwt(jwtToken);
 

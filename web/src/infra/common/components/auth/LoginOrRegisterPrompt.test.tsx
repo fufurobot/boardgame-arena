@@ -3,6 +3,7 @@ import { LoginOrRegisterPrompt } from './LoginOrRegisterPrompt';
 import Enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -78,6 +79,6 @@ describe('LoginOrRegisterPrompt', () => {
   it('shows a progress indicator while submitting', () => {
     wrapper.setProps({ loading: true });
     wrapper.update();
-    expect(wrapper.find('CircularProgress').length).toBeGreaterThan(0);
+    expect(wrapper.find(CircularProgress).length).toBeGreaterThan(0);
   });
 });
