@@ -2,6 +2,7 @@ import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { User } from './gql/User.gql';
 import { NewUserInput } from './gql/NewUserInput.gql';
 import { NewUser } from './gql/NewUser.gql';
+import { CredentialsInput } from './gql/CredentialsInput.gql';
 import { UsersService } from './users.service';
 import { CurrentUser, GqlAuthGuard } from '../internal/auth/GqlAuthGuard';
 import { UseGuards } from '@nestjs/common';
@@ -24,6 +25,34 @@ export class UsersResolver {
     const jwtToken = this.fbgJwtService.getToken({ userId });
     const newUser: NewUser = { jwtToken };
     return newUser;
+  }
+
+  /** Registers a new account with a password and logs it in. */
+  @Mutation(() => NewUser)
+  async register(
+    @Args({ name: 'credentials', type: () => CredentialsInput })
+    credentials: CredentialsInput,
+  ): Promise<NewUser> {
+    const userId = await this.usersService.register({
+      nickname: credentials.nickname,
+      password: credentials.password,
+    });
+    const jwtToken = this.fbgJwtService.getToken({ userId });
+    return { jwtToken };
+  }
+
+  /** Exchanges a nickname and password for a jwt token. */
+  @Mutation(() => NewUser)
+  async login(
+    @Args({ name: 'credentials', type: () => CredentialsInput })
+    credentials: CredentialsInput,
+  ): Promise<NewUser> {
+    const user = await this.usersService.verifyCredentials(
+      credentials.nickname,
+      credentials.password,
+    );
+    const jwtToken = this.fbgJwtService.getToken({ userId: user.id });
+    return { jwtToken };
   }
 
   @Mutation(() => Boolean)

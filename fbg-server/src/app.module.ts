@@ -7,6 +7,7 @@ import { HealthzController } from './healthz.controller';
 import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { ChatModule } from './chat/chat.module';
+import { GamesModule } from './games/games.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 const CONNECTION: any = process.env.POSTGRES_URL
@@ -46,6 +47,7 @@ const forceDbSync = process.env.FORCE_DB_SYNC === 'true';
     RoomsModule,
     MatchModule,
     ChatModule,
+    GamesModule,
     HttpModule.register({
       timeout: 2000,
       maxRedirects: 5,

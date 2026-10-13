@@ -4,6 +4,7 @@
 
 type User {
   id: Int
+  role: String
   nickname: String!
 }
 
@@ -58,14 +59,30 @@ type Message {
   message: String!
 }
 
+type Game {
+  id: Int!
+  code: String!
+  name: String!
+  description: String
+  minPlayers: Int!
+  maxPlayers: Int!
+  published: Boolean!
+  ownerId: Int!
+}
+
 type Query {
   user: User!
   lobby: Lobby!
   match(id: String!): Match!
+  games: [Game!]!
+  game(code: String!): Game!
+  myGames: [Game!]!
 }
 
 type Mutation {
   newUser(user: NewUserInput!): NewUser!
+  register(credentials: CredentialsInput!): NewUser!
+  login(credentials: CredentialsInput!): NewUser!
   updateUser(user: NewUserInput!): Boolean!
   newRoom(room: NewRoomInput!): NewRoom!
   joinRoom(roomId: String!): Room!
@@ -77,10 +94,18 @@ type Mutation {
   nextRoom(matchId: String!): String!
   startMatch(roomId: String!, shuffleUsers: Boolean!, setupData: String!): String!
   sendMessage(message: SendMessageInput!): Boolean!
+  publishGame(game: PublishGameInput!): Game!
+  updateGame(id: Int!, game: UpdateGameInput!): Game!
+  unpublishGame(id: Int!): Boolean!
 }
 
 input NewUserInput {
   nickname: String!
+}
+
+input CredentialsInput {
+  nickname: String!
+  password: String!
 }
 
 input NewRoomInput {
@@ -99,6 +124,22 @@ input SendMessageInput {
   channelType: String!
   channelId: String!
   message: String!
+}
+
+input PublishGameInput {
+  code: String!
+  name: String!
+  description: String
+  minPlayers: Int!
+  maxPlayers: Int!
+}
+
+input UpdateGameInput {
+  name: String
+  description: String
+  minPlayers: Int
+  maxPlayers: Int
+  published: Boolean
 }
 
 type Subscription {

@@ -5,4 +5,8 @@ export class User {
   @Field(() => Int, { nullable: true })
   id?: number;
   nickname: string;
+
+  /** Role name, e.g. `user`, `moderator`, `admin`. */
+  @Field({ nullable: true })
+  role?: string;
 }
