@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RoomsService } from './rooms.service';
+import { uniqueNickname } from '../testing/userUtil';
 import { FakeDbModule, closeDbConnection } from '../testing/dbUtil';
 import { RoomsModule } from '../rooms/rooms.module';
 import { UsersService } from '../users/users.service';
@@ -38,7 +39,8 @@ describe('LobbyService', () => {
   });
 
   it('should only show public rooms', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const privateRoom = await roomsService.newRoom(
       {
         capacity: 3,
@@ -61,7 +63,8 @@ describe('LobbyService', () => {
   });
 
   it('should not show empty rooms', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await roomsService.newRoom(
       {
         capacity: 3,
@@ -76,7 +79,8 @@ describe('LobbyService', () => {
   });
 
   it('should not show rooms when it is in full capacity', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await roomsService.newRoom(
       {
         capacity: 2,
@@ -85,7 +89,8 @@ describe('LobbyService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await roomsService.joinRoom(aliceId, room.id);
 
     const lobby = await service.getLobby();

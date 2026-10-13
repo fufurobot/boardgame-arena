@@ -56,7 +56,9 @@ describe('UsersService', () => {
   });
 
   it('should update nickname correctly', async () => {
-    const oldNickname = 'foo';
+    // Nicknames now identify an account for login and are unique, so this
+    // must not reuse the nickname created by an earlier test.
+    const oldNickname = 'baz';
     const id = await service.newUser({ nickname: oldNickname });
     const nickname = 'bar';
     await service.updateUser(id, { nickname });

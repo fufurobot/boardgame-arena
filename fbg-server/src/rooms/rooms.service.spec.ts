@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RoomsService } from './rooms.service';
+import { uniqueNickname } from '../testing/userUtil';
 import { UsersService } from '../users/users.service';
 import { FakeDbModule, closeDbConnection } from '../testing/dbUtil';
 import { RoomsModule } from '../rooms/rooms.module';
@@ -46,13 +47,15 @@ describe('RoomsService', () => {
       gameCode: 'checkers',
       isPublic: false,
     };
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const newRoom = await service.newRoom(room, bobId);
     expect(newRoom).toMatchObject({ ...room });
   });
 
   it('should join room for creator successfully', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 2,
@@ -63,12 +66,13 @@ describe('RoomsService', () => {
     );
     const newRoom = await service.getRoomEntity(room.id);
     expect(newRoom.userMemberships).toMatchObject([
-      { isCreator: true, position: 1, user: { id: bobId, nickname: 'bob' } },
+      { isCreator: true, position: 1, user: { id: bobId, nickname: bobIdNickname } },
     ]);
   });
 
   it('should have user after joining', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -77,13 +81,15 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     const result = await service.joinRoom(aliceId, room.id);
     expect(result.userMemberships.length).toEqual(2);
   });
 
   it('should ignore join if over capacity', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 2,
@@ -92,16 +98,19 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
 
-    const joeId = await usersService.newUser({ nickname: 'joe' });
+    const joeIdNickname = uniqueNickname('joe');
+    const joeId = await usersService.newUser({ nickname: joeIdNickname });
     const result = await service.joinRoom(joeId, room.id);
     expect(result.id).toEqual(room.id);
   });
 
   it('should ignore joining twice', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 2,
@@ -110,7 +119,8 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
 
     const result = await service.joinRoom(aliceId, room.id);
@@ -118,7 +128,8 @@ describe('RoomsService', () => {
   });
 
   it('should joinRoom successfully', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -127,14 +138,16 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
     const newRoom = await service.getRoomEntity(room.id);
     expect(newRoom.userMemberships.length).toEqual(2);
   });
 
   it('should leaveRoom successfully', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -143,7 +156,8 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
     await service.leaveRoom(aliceId, room.id);
     const newRoom = await service.getRoomEntity(room.id);
@@ -151,7 +165,8 @@ describe('RoomsService', () => {
   });
 
   it('should remove from room successfully', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -160,7 +175,8 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
     await service.removeFromRoom(bobId, aliceId, room.id);
     const newRoom = await service.getRoomEntity(room.id);
@@ -168,7 +184,8 @@ describe('RoomsService', () => {
   });
 
   it('should move up user successfully', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     let room = await service.newRoom(
       {
         capacity: 3,
@@ -177,7 +194,8 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
 
     await service.joinRoom(aliceId, room.id);
     room = await service.getRoomEntity(room.id);
@@ -197,7 +215,8 @@ describe('RoomsService', () => {
   });
 
   it('should notify about new room capacity and game', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -224,7 +243,8 @@ describe('RoomsService', () => {
       gameCode: 'checkers',
       isPublic: true,
     };
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     jest.clearAllMocks();
     const post = jest.spyOn(httpService, 'post').mockImplementation(() => ({ toPromise: () => Promise.resolve() }) as any);
     const webhookUrl = "https://foo";
@@ -241,7 +261,8 @@ describe('RoomsService', () => {
   });
 
   it('should notify that about a user update succesfully', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -250,7 +271,8 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
     jest.clearAllMocks();
     const publish = jest.spyOn(pubSub, 'publish');
@@ -263,7 +285,8 @@ describe('RoomsService', () => {
   });
 
   it('should not allow non-owner to remove from room', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -272,7 +295,8 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
     const result = service.removeFromRoom(aliceId, bobId, room.id);
     await expect(result).rejects.toThrow();
@@ -291,7 +315,8 @@ describe('RoomsService', () => {
     jest
       .spyOn(httpService, 'post')
       .mockReturnValue({ toPromise: promiseMock } as any);
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 2,
@@ -300,7 +325,8 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
     await matchService.startMatch(room.id, bobId);
     const leave = await service.leaveRoom(aliceId, room.id);
@@ -308,7 +334,8 @@ describe('RoomsService', () => {
   });
 
   it('should give ownership to next person on the room after leaving', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -317,17 +344,19 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
     await service.leaveRoom(bobId, room.id);
     const newRoom = await service.getRoomEntity(room.id);
     expect(newRoom.userMemberships.length).toEqual(1);
-    expect(newRoom.userMemberships[0].user.nickname).toEqual('alice');
+    expect(newRoom.userMemberships[0].user.nickname).toEqual(aliceIdNickname);
     expect(newRoom.userMemberships[0].isCreator).toEqual(true);
   });
 
   it('should give ownership to joining person if empty', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 3,
@@ -336,12 +365,13 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.leaveRoom(bobId, room.id);
     await service.joinRoom(aliceId, room.id);
     const newRoom = await service.getRoomEntity(room.id);
     expect(newRoom.userMemberships.length).toEqual(1);
-    expect(newRoom.userMemberships[0].user.nickname).toEqual('alice');
+    expect(newRoom.userMemberships[0].user.nickname).toEqual(aliceIdNickname);
     expect(newRoom.userMemberships[0].isCreator).toEqual(true);
   });
 
@@ -358,7 +388,8 @@ describe('RoomsService', () => {
     jest
       .spyOn(httpService, 'post')
       .mockReturnValue({ toPromise: promiseMock } as any);
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await service.newRoom(
       {
         capacity: 2,
@@ -367,7 +398,8 @@ describe('RoomsService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await service.joinRoom(aliceId, room.id);
     const roomId = await matchService.startMatch(room.id, bobId);
     const visit = await service.joinRoom(aliceId, room.id);

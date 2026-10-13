@@ -3,23 +3,42 @@ import { GamesService } from './games.service';
 import { FakeDbModule, closeDbConnection } from '../testing/dbUtil';
 import { GamesModule } from './games.module';
 import { UsersModule } from '../users/users.module';
+import { UsersService } from '../users/users.service';
 import { RoomsModule } from '../rooms/rooms.module';
 import { MatchModule } from '../match/match.module';
 
 /**
  * Objective 2: `fbg-server` must not serve only bundled games; registered
  * users may publish their own games.
+ *
+ * Games carry a foreign key to their owner, so these tests create real users
+ * rather than inventing ids.
  */
 describe('GamesService', () => {
   let module: TestingModule;
   let games: GamesService;
+  let users: UsersService;
+  let userSeq = 0;
+
+  /** Creates a distinct real user and returns its id. */
+  async function makeUser(): Promise<number> {
+    const nickname = `player${userSeq++}`;
+    return users.register({ nickname, password: 'password1234' });
+  }
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [FakeDbModule, GamesModule, UsersModule, RoomsModule, MatchModule],
+      imports: [
+        FakeDbModule,
+        GamesModule,
+        UsersModule,
+        RoomsModule,
+        MatchModule,
+      ],
     }).compile();
 
     games = module.get<GamesService>(GamesService);
+    users = module.get<UsersService>(UsersService);
   });
 
   afterAll(async () => {
@@ -27,8 +46,9 @@ describe('GamesService', () => {
   });
 
   it('publishes a game owned by the publishing user', async () => {
+    const ownerId = await makeUser();
     const game = await games.publish({
-      ownerId: 1,
+      ownerId,
       code: 'mygame',
       name: 'My Game',
       minPlayers: 2,
@@ -36,13 +56,14 @@ describe('GamesService', () => {
     });
 
     expect(game.code).toEqual('mygame');
-    expect(game.ownerId).toEqual(1);
+    expect(game.ownerId).toEqual(ownerId);
     expect(game.published).toEqual(true);
   });
 
   it('rejects a duplicate game code', async () => {
+    const ownerId = await makeUser();
     await games.publish({
-      ownerId: 1,
+      ownerId,
       code: 'dupe',
       name: 'Dupe',
       minPlayers: 1,
@@ -50,7 +71,7 @@ describe('GamesService', () => {
     });
     await expect(
       games.publish({
-        ownerId: 2,
+        ownerId,
         code: 'dupe',
         name: 'Dupe Again',
         minPlayers: 1,
@@ -60,9 +81,10 @@ describe('GamesService', () => {
   });
 
   it('rejects an invalid game code', async () => {
+    const ownerId = await makeUser();
     await expect(
       games.publish({
-        ownerId: 1,
+        ownerId,
         code: 'Not Valid!',
         name: 'Bad',
         minPlayers: 1,
@@ -72,9 +94,10 @@ describe('GamesService', () => {
   });
 
   it('rejects an invalid player count range', async () => {
+    const ownerId = await makeUser();
     await expect(
       games.publish({
-        ownerId: 1,
+        ownerId,
         code: 'badrange',
         name: 'Bad Range',
         minPlayers: 5,
@@ -84,8 +107,9 @@ describe('GamesService', () => {
   });
 
   it('lists published games', async () => {
+    const ownerId = await makeUser();
     await games.publish({
-      ownerId: 1,
+      ownerId,
       code: 'listed',
       name: 'Listed',
       minPlayers: 2,
@@ -96,8 +120,9 @@ describe('GamesService', () => {
   });
 
   it('looks up a game by code', async () => {
+    const ownerId = await makeUser();
     await games.publish({
-      ownerId: 1,
+      ownerId,
       code: 'findme',
       name: 'Find Me',
       minPlayers: 1,
@@ -112,62 +137,71 @@ describe('GamesService', () => {
   });
 
   it('lets the owner update their game', async () => {
+    const ownerId = await makeUser();
     const g = await games.publish({
-      ownerId: 7,
+      ownerId,
       code: 'updatable',
       name: 'Old Name',
       minPlayers: 1,
       maxPlayers: 2,
     });
-    await games.update(g.id, 7, { name: 'New Name' });
+    await games.update(g.id, ownerId, { name: 'New Name' });
     expect((await games.getByCode('updatable')).name).toEqual('New Name');
   });
 
   it('refuses updates from a non-owner', async () => {
+    const ownerId = await makeUser();
+    const strangerId = await makeUser();
     const g = await games.publish({
-      ownerId: 8,
+      ownerId,
       code: 'protected',
       name: 'Protected',
       minPlayers: 1,
       maxPlayers: 2,
     });
-    await expect(games.update(g.id, 9, { name: 'Hijacked' })).rejects.toThrow();
+    await expect(
+      games.update(g.id, strangerId, { name: 'Hijacked' }),
+    ).rejects.toThrow();
   });
 
   it('lets the owner unpublish their game', async () => {
+    const ownerId = await makeUser();
     const g = await games.publish({
-      ownerId: 10,
+      ownerId,
       code: 'tempgame',
       name: 'Temp',
       minPlayers: 1,
       maxPlayers: 2,
     });
-    await games.unpublish(g.id, 10);
+    await games.unpublish(g.id, ownerId);
     const all = await games.listPublished();
     expect(all.map((x) => x.code)).not.toContain('tempgame');
   });
 
   it('refuses unpublish from a non-owner', async () => {
+    const ownerId = await makeUser();
+    const strangerId = await makeUser();
     const g = await games.publish({
-      ownerId: 11,
+      ownerId,
       code: 'keepgame',
       name: 'Keep',
       minPlayers: 1,
       maxPlayers: 2,
     });
-    await expect(games.unpublish(g.id, 12)).rejects.toThrow();
+    await expect(games.unpublish(g.id, strangerId)).rejects.toThrow();
   });
 
   it('lists games owned by a given user', async () => {
+    const ownerId = await makeUser();
     await games.publish({
-      ownerId: 42,
+      ownerId,
       code: 'mine1',
       name: 'Mine 1',
       minPlayers: 1,
       maxPlayers: 2,
     });
-    const mine = await games.listByOwner(42);
+    const mine = await games.listByOwner(ownerId);
     expect(mine.map((g) => g.code)).toContain('mine1');
-    expect(mine.every((g) => g.ownerId === 42)).toEqual(true);
+    expect(mine.every((g) => g.ownerId === ownerId)).toEqual(true);
   });
 });

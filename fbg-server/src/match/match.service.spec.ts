@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MatchService } from './match.service';
+import { uniqueNickname } from '../testing/userUtil';
 import { MatchModule } from './match.module';
 import { RoomsModule } from '../rooms/rooms.module';
 import { UsersModule } from '../users/users.module';
@@ -52,7 +53,8 @@ describe('MatchService', () => {
     matchEntity.bgioServerExternalUrl = 'fooExternalUrl';
     matchEntity.bgioMatchId = 'fooMatchId';
     await matchRepository.save(matchEntity);
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     const alice = await usersService.getUserEntity(aliceId);
     const aliceMatchMembership = new MatchMembershipEntity();
     aliceMatchMembership.user = alice;
@@ -60,7 +62,8 @@ describe('MatchService', () => {
     aliceMatchMembership.bgioSecret = 'aliceSecret';
     aliceMatchMembership.bgioPlayerId = 1;
     await matchMembershipRepository.save(aliceMatchMembership);
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const bob = await usersService.getUserEntity(bobId);
     const bobMatchMembership = new MatchMembershipEntity();
     bobMatchMembership.user = bob;
@@ -78,8 +81,8 @@ describe('MatchService', () => {
       bgioSecret: 'aliceSecret',
       bgioPlayerId: '1',
       playerMemberships: [
-        { user: { id: bobId, nickname: 'bob' } },
-        { user: { id: aliceId, nickname: 'alice' } },
+        { user: { id: bobId, nickname: bobIdNickname } },
+        { user: { id: aliceId, nickname: aliceIdNickname } },
       ],
     });
   });
@@ -97,7 +100,8 @@ describe('MatchService', () => {
     jest
       .spyOn(httpService, 'post')
       .mockReturnValue({ toPromise: promiseMock } as any);
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await roomsService.newRoom(
       {
         capacity: 2,
@@ -106,7 +110,8 @@ describe('MatchService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await roomsService.joinRoom(aliceId, room.id);
     const matchId = await service.startMatch(room.id, bobId);
     const newRoomId = await service.getNextRoom(matchId, bobId);
@@ -134,7 +139,8 @@ describe('MatchService', () => {
     jest
       .spyOn(httpService, 'post')
       .mockReturnValue({ toPromise: promiseMock } as any);
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await roomsService.newRoom(
       {
         capacity: 2,
@@ -143,18 +149,21 @@ describe('MatchService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await roomsService.joinRoom(aliceId, room.id);
     const matchId = await service.startMatch(room.id, bobId);
 
-    const joeId = await usersService.newUser({ nickname: 'joe' });
+    const joeIdNickname = uniqueNickname('joe');
+    const joeId = await usersService.newUser({ nickname: joeIdNickname });
     const result = service.getNextRoom(matchId, joeId);
 
     await expect(result).rejects.toThrow();
   });
 
   it('should fail to start match if room is not full', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await roomsService.newRoom(
       {
         capacity: 2,
@@ -169,7 +178,8 @@ describe('MatchService', () => {
   });
 
   it('should fail to start match if not the creator', async () => {
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await roomsService.newRoom(
       {
         capacity: 2,
@@ -178,7 +188,8 @@ describe('MatchService', () => {
       },
       bobId,
     );
-    const aliceId = await usersService.newUser({ nickname: 'bob' });
+    const aliceIdNickname = uniqueNickname('bob');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await roomsService.joinRoom(aliceId, room.id);
 
     const result = service.startMatch(room.id, aliceId);
@@ -198,7 +209,8 @@ describe('MatchService', () => {
     jest
       .spyOn(httpService, 'post')
       .mockReturnValue({ toPromise: promiseMock } as any);
-    const bobId = await usersService.newUser({ nickname: 'bob' });
+    const bobIdNickname = uniqueNickname('bob');
+    const bobId = await usersService.newUser({ nickname: bobIdNickname });
     const room = await roomsService.newRoom(
       {
         capacity: 2,
@@ -208,7 +220,8 @@ describe('MatchService', () => {
       bobId,
     );
 
-    const aliceId = await usersService.newUser({ nickname: 'alice' });
+    const aliceIdNickname = uniqueNickname('alice');
+    const aliceId = await usersService.newUser({ nickname: aliceIdNickname });
     await roomsService.joinRoom(aliceId, room.id);
 
     const matchId = await service.startMatch(room.id, bobId);

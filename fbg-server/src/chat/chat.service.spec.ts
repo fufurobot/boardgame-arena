@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatService } from './chat.service';
+import { uniqueNickname } from '../testing/userUtil';
 import { ChatModule } from './chat.module';
 import { RoomsModule } from '../rooms/rooms.module';
 import { UsersModule } from '../users/users.module';
@@ -43,10 +44,11 @@ describe('ChatService', () => {
   });
 
   describe('public room', () => {
-    let bobId, room, aliceId, channelId;
+    let bobId, room, aliceId, aliceIdNickname, channelId;
     const channelType = 'room';
     beforeAll(async () => {
-      bobId = await usersService.newUser({ nickname: 'bob' });
+      const bobIdNickname = uniqueNickname('bob');
+      bobId = await usersService.newUser({ nickname: bobIdNickname });
       room = await roomsService.newRoom(
         {
           capacity: 2,
@@ -56,13 +58,15 @@ describe('ChatService', () => {
         bobId,
       );
       channelId = room.id;
-      aliceId = await usersService.newUser({ nickname: 'alice' });
+      aliceIdNickname = uniqueNickname('alice');
+      aliceId = await usersService.newUser({ nickname: aliceIdNickname });
       await roomsService.joinRoom(aliceId, room.id);
     });
 
     it('should throw error for user not present', async () => {
       const message = 'Hello, bob!';
-      const joeId = await usersService.newUser({ nickname: 'joe' });
+      const joeIdNickname = uniqueNickname('joe');
+      const joeId = await usersService.newUser({ nickname: joeIdNickname });
       const result = service.sendMessage(joeId, { channelType, channelId, message });
 
       await expect(result).rejects.toThrow();
@@ -76,7 +80,7 @@ describe('ChatService', () => {
 
       const args = publish.mock.calls[0];
       expect(args[0]).toEqual(`chat/room/${room.id}`);
-      expect(args[1].chatMutated.userNickname).toEqual('alice');
+      expect(args[1].chatMutated.userNickname).toEqual(aliceIdNickname);
       expect(args[1].chatMutated.message).toEqual(message);
     });
 
@@ -92,10 +96,11 @@ describe('ChatService', () => {
   });
 
   describe('private room', () => {
-    let bobId, room, aliceId, channelId;
+    let bobId, room, aliceId, aliceIdNickname, channelId;
     const channelType = 'room';
     beforeAll(async () => {
-      bobId = await usersService.newUser({ nickname: 'bob' });
+      const bobIdNickname = uniqueNickname('bob');
+      bobId = await usersService.newUser({ nickname: bobIdNickname });
       room = await roomsService.newRoom(
         {
           capacity: 2,
@@ -105,7 +110,8 @@ describe('ChatService', () => {
         bobId,
       );
       channelId = room.id;
-      aliceId = await usersService.newUser({ nickname: 'alice' });
+      aliceIdNickname = uniqueNickname('alice');
+      aliceId = await usersService.newUser({ nickname: aliceIdNickname });
       await roomsService.joinRoom(aliceId, room.id);
     });
 
@@ -121,7 +127,7 @@ describe('ChatService', () => {
   });
 
   describe('match', () => {
-    let bobId, matchId, aliceId, channelId;
+    let bobId, matchId, aliceId, aliceIdNickname, channelId;
     const channelType = 'match';
     beforeAll(async () => {
       const promiseMock = jest
@@ -136,7 +142,8 @@ describe('ChatService', () => {
       jest
         .spyOn(httpService, 'post')
         .mockReturnValue({ toPromise: promiseMock } as any);
-      bobId = await usersService.newUser({ nickname: 'bob' });
+      const bobIdNickname = uniqueNickname('bob');
+      bobId = await usersService.newUser({ nickname: bobIdNickname });
       const room = await roomsService.newRoom(
         {
           capacity: 2,
@@ -145,7 +152,8 @@ describe('ChatService', () => {
         },
         bobId,
       );
-      aliceId = await usersService.newUser({ nickname: 'alice' });
+      aliceIdNickname = uniqueNickname('alice');
+      aliceId = await usersService.newUser({ nickname: aliceIdNickname });
       await roomsService.joinRoom(aliceId, room.id);
       matchId = await matchService.startMatch(room.id, bobId);
       channelId = matchId;
@@ -153,7 +161,8 @@ describe('ChatService', () => {
 
     it('should throw error for user not present', async () => {
       const message = 'Hello, bob!';
-      const joeId = await usersService.newUser({ nickname: 'joe' });
+      const joeIdNickname = uniqueNickname('joe');
+      const joeId = await usersService.newUser({ nickname: joeIdNickname });
       const result = service.sendMessage(joeId, { channelType, channelId, message });
 
       await expect(result).rejects.toThrow();
@@ -167,7 +176,7 @@ describe('ChatService', () => {
 
       const args = publish.mock.calls[0];
       expect(args[0]).toEqual(`chat/match/${matchId}`);
-      expect(args[1].chatMutated.userNickname).toEqual('alice');
+      expect(args[1].chatMutated.userNickname).toEqual(aliceIdNickname);
       expect(args[1].chatMutated.message).toEqual(message);
     });
   })
