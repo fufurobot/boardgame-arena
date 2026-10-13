@@ -6,6 +6,8 @@ import { CredentialsInput } from './gql/CredentialsInput.gql';
 import { UsersService } from './users.service';
 import { CurrentUser, GqlAuthGuard } from '../internal/auth/GqlAuthGuard';
 import { UseGuards } from '@nestjs/common';
+import { Int } from '@nestjs/graphql';
+import { UserRole } from './db/User.entity';
 import { FbgJwtService } from '../internal/auth/FbgJwtService';
 import { RoomsService } from '../rooms/rooms.service';
 
@@ -63,6 +65,23 @@ export class UsersResolver {
   ): Promise<boolean> {
     await this.usersService.updateUser(currentUser.id, userInput);
     await this.roomsService.notifyUserUpdated(currentUser.id);
+    return true;
+  }
+
+  /**
+   * Changes another user's role. Requires admin.
+   *
+   * Authorization is enforced in the service layer as well as by the guard,
+   * so the rule holds even if this method is called from elsewhere.
+   */
+  @Mutation(() => Boolean)
+  @UseGuards(GqlAuthGuard)
+  async setUserRole(
+    @CurrentUser() currentUser: User,
+    @Args({ name: 'userId', type: () => Int }) userId: number,
+    @Args({ name: 'role', type: () => String }) role: string,
+  ): Promise<boolean> {
+    await this.usersService.setUserRoleAs(currentUser.id, userId, role as UserRole);
     return true;
   }
 

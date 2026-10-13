@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { userEntityToUser } from './UserUtil';
 import { hashPassword, verifyPassword, MIN_PASSWORD_LENGTH } from './password';
+import { isKnownRole, roleSatisfies } from '../internal/auth/roles';
 
 const VALID_NICKNAME_REGEX = /^[A-Za-z0-9_]*$/;
 
@@ -183,10 +184,43 @@ export class UsersService {
 
   /** Sets a user's role. Used by role-based authorization (objective 3). */
   async setRole(userId: number, role: UserRole): Promise<void> {
-    if (!Object.values(UserRole).includes(role)) {
+    if (!isKnownRole(role)) {
       throw new HttpException(`Unknown role: ${role}`, HttpStatus.BAD_REQUEST);
     }
     await this.usersRepository.update(userId, { role });
+  }
+
+  /**
+   * True when the user's role satisfies `required`.
+   *
+   * Uses the role hierarchy, so an admin satisfies a moderator requirement.
+   */
+  async hasRole(userId: number, required: UserRole): Promise<boolean> {
+    const entity = await this.getUserEntity(userId);
+    return roleSatisfies(entity.role, required);
+  }
+
+  /**
+   * Changes another user's role, authorized as `actorId`.
+   *
+   * Enforces admin in the service layer so the rule cannot be bypassed by a
+   * caller that forgets the guard.
+   */
+  async setUserRoleAs(
+    actorId: number,
+    targetUserId: number,
+    role: UserRole,
+  ): Promise<void> {
+    if (!(await this.hasRole(actorId, UserRole.ADMIN))) {
+      throw new HttpException(
+        'Only an admin may change user roles.',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (!isKnownRole(role)) {
+      throw new HttpException(`Unknown role: ${role}`, HttpStatus.BAD_REQUEST);
+    }
+    await this.setRole(targetUserId, role);
   }
 
   /** Update user's information. */
