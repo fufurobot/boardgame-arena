@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthzController } from './healthz.controller';
-import { HttpModule, HttpService } from '@nestjs/common';
+import { HttpModule, HttpService } from '@nestjs/axios';
+import {  } from '@nestjs/common';
 import { of } from 'rxjs';
 import { AxiosResponse } from 'axios';
 
@@ -31,7 +32,8 @@ describe('Healthz Controller', () => {
       status: 200,
       statusText: 'OK',
       headers: {},
-      config: {},
+      // axios 1.x requires headers on the request config.
+      config: { headers: {} } as any,
     };
     jest.spyOn(httpService, 'post').mockImplementationOnce(() => of(result));
     expect(await controller.healthz()).toEqual('OK');

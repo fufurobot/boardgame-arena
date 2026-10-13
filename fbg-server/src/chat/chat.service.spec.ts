@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatService } from './chat.service';
+import { HttpService } from '@nestjs/axios';
 import { uniqueNickname } from '../testing/userUtil';
 import { ChatModule } from './chat.module';
 import { RoomsModule } from '../rooms/rooms.module';
@@ -10,7 +11,7 @@ import { RoomsService } from '../rooms/rooms.service';
 import { MatchService } from '../match/match.service';
 import { PubSub } from 'graphql-subscriptions';
 import { closeDbConnection } from '../testing/dbUtil';
-import { HttpService } from '@nestjs/common';
+import {  } from '@nestjs/common';
 import { FBG_PUB_SUB } from '../internal/FbgPubSubModule';
 
 describe('ChatService', () => {

@@ -1,5 +1,6 @@
-import { Module, HttpModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HttpModule } from '@nestjs/axios';
 import { UsersModule } from './users/users.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { MatchModule } from './match/match.module';
@@ -8,6 +9,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { ChatModule } from './chat/chat.module';
 import { GamesModule } from './games/games.module';
+import { GithubOauthModule } from './internal/auth/github/github-oauth.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 const CONNECTION: any = process.env.POSTGRES_URL
@@ -48,6 +50,7 @@ const forceDbSync = process.env.FORCE_DB_SYNC === 'true';
     MatchModule,
     ChatModule,
     GamesModule,
+    GithubOauthModule,
     HttpModule.register({
       timeout: 2000,
       maxRedirects: 5,

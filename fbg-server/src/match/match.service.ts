@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-  HttpService,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus,  } from '@nestjs/common';
 import { MatchEntity } from '../match/db/Match.entity';
+import { HttpService } from '@nestjs/axios';
 import { MatchMembershipEntity } from '../match/db/MatchMembership.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection, QueryRunner } from 'typeorm';

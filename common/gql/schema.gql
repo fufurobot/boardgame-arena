@@ -84,6 +84,7 @@ type Mutation {
   register(credentials: CredentialsInput!): NewUser!
   login(credentials: CredentialsInput!): NewUser!
   updateUser(user: NewUserInput!): Boolean!
+  setUserRole(userId: Int!, role: String!): Boolean!
   newRoom(room: NewRoomInput!): NewRoom!
   joinRoom(roomId: String!): Room!
   leaveRoom(roomId: String!): Boolean!

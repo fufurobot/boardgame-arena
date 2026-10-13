@@ -1,5 +1,6 @@
-import { Module, HttpModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HttpModule } from '@nestjs/axios';
 import { MatchEntity } from './db/Match.entity';
 import { MatchMembershipEntity } from './db/MatchMembership.entity';
 import { MatchService } from './match.service';

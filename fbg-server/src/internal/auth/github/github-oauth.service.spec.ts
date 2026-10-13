@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import {  } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { GithubOauthService } from './github-oauth.service';
-import { UsersService } from '../../users/users.service';
-import { UsersModule } from '../../users/users.module';
-import { FakeDbModule, closeDbConnection } from '../../testing/dbUtil';
-import { RoomsModule } from '../../rooms/rooms.module';
-import { MatchModule } from '../../match/match.module';
-import { UserRole } from '../../users/db/User.entity';
+import { UsersService } from '../../../users/users.service';
+import { UsersModule } from '../../../users/users.module';
+import { FakeDbModule, closeDbConnection } from '../../../testing/dbUtil';
+import { RoomsModule } from '../../../rooms/rooms.module';
+import { MatchModule } from '../../../match/match.module';
+import { UserRole } from '../../../users/db/User.entity';
 
 /**
  * Objective 4: log in with GitHub.
@@ -19,8 +21,14 @@ describe('GithubOauthService', () => {
   let users: UsersService;
 
   beforeAll(async () => {
+    // The authorize URL is built from configuration; supply it so this test
+    // does not depend on the ambient environment.
+    process.env.GITHUB_OAUTH_CLIENT_ID = process.env.GITHUB_OAUTH_CLIENT_ID || 'test-client-id';
+    process.env.GITHUB_OAUTH_CALLBACK_URL =
+      process.env.GITHUB_OAUTH_CALLBACK_URL || 'http://localhost:3001/auth/github/callback';
+
     module = await Test.createTestingModule({
-      imports: [FakeDbModule, UsersModule, RoomsModule, MatchModule],
+      imports: [FakeDbModule, UsersModule, RoomsModule, MatchModule, HttpModule],
       providers: [GithubOauthService],
     }).compile();
     service = module.get(GithubOauthService);

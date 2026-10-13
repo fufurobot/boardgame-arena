@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RoomsService } from './rooms.service';
+import { HttpService } from '@nestjs/axios';
 import { uniqueNickname } from '../testing/userUtil';
 import { UsersService } from '../users/users.service';
 import { FakeDbModule, closeDbConnection } from '../testing/dbUtil';
 import { RoomsModule } from '../rooms/rooms.module';
 import { UsersModule } from '../users/users.module';
 import { MatchModule } from '../match/match.module';
-import { HttpService } from '@nestjs/common';
+import {  } from '@nestjs/common';
 import { MatchService } from '../match/match.service';
 import { NewRoomInput } from './gql/NewRoomInput.gql';
 import { PubSub } from 'graphql-subscriptions';

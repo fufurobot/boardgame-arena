@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MatchService } from './match.service';
+import { HttpService } from '@nestjs/axios';
 import { uniqueNickname } from '../testing/userUtil';
 import { MatchModule } from './match.module';
 import { RoomsModule } from '../rooms/rooms.module';
@@ -11,7 +12,7 @@ import { Repository } from 'typeorm';
 import { MatchMembershipEntity } from './db/MatchMembership.entity';
 import { UsersService } from '../users/users.service';
 import { RoomsService } from '../rooms/rooms.service';
-import { HttpService } from '@nestjs/common';
+import {  } from '@nestjs/common';
 
 describe('MatchService', () => {
   let module: TestingModule;
