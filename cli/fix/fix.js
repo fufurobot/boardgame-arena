@@ -4,7 +4,7 @@ import { fixGame } from "./fix_game.js";
 import { fixAll } from "./fix_all.js";
 import chalk from "chalk";
 
-const USAGE = "Usage: yarn run fix [GAME CODE]";
+const USAGE = "Usage: bun run fix [GAME CODE]";
 
 function start() {
   const argv = process.argv;

@@ -19,9 +19,8 @@ if [ ! -f docker-compose.yml ]; then
     cp docker-compose.yml.example docker-compose.yml
 fi
 
-# ensure yarn and npm are installed
-yarn -v > /dev/null 2>&1 || (echo "ERROR: yarn is not installed." && exit 1)
-npm -v > /dev/null 2>&1  || (echo "ERROR: npm is not installed." && exit 1)
+# ensure bun is installed
+bun -v > /dev/null 2>&1 || (echo "ERROR: bun is not installed." && exit 1)
 
 # define functions
 confirm() {
@@ -40,13 +39,13 @@ confirm() {
 run_gameserver() {
     cd "$DIR"
     echo -e "Now the game index will be generated."
-    yarn run codegen || (echo -e "ERROR. (ensure node is up-to-date)" && exit 1)
-    cd web && yarn run i18n:copy && cd -
+    bun run codegen || (echo -e "ERROR. (ensure node is up-to-date)" && exit 1)
+    cd web && bun run i18n:copy && cd -
 }
 
 install_dependencies() {
     cd "$DIR"
-    yarn install || (echo -e "ERROR. (ensure node is up-to-date)" && exit 1)
+    bun install || (echo -e "ERROR. (ensure node is up-to-date)" && exit 1)
 }
 
 compile_dependencies() {

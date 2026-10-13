@@ -1,0 +1,65 @@
+# Publish artifacts and deploy GitHub Pages on release.
+#
+# Branch model: dev -> fast tests, main -> full tests, release tag -> publish.
+name: Publish
+
+on:
+  push:
+    tags: ["v*"]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish-pages:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build static site
+        run: |
+          cd v2
+          bun install --frozen-lockfile
+          cd fbg-web
+          bun run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: v2/fbg-web/out
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  publish-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Build docker images
+        run: ./docker-build.sh -db
+      - name: Export image tarball
+        run: |
+          mkdir -p dist
+          docker save $(docker images --format '{{.Repository}}:{{.Tag}}' | grep freeboardgames/) \
+            -o dist/freeboardgames.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: freeboardgames-images
+          path: dist/freeboardgames.tar

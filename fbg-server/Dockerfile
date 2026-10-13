@@ -1,28 +1,28 @@
 # fbg-server
 FROM fbg-common:latest AS common
-FROM node:16.14-alpine3.14 AS builder
+FROM oven/bun:1.1-alpine AS builder
 RUN addgroup -g 938 appuser && adduser -h /appdata -S -u 997 -G appuser appuser && rm /bin/su
 USER appuser
 WORKDIR /appdata
 
 # install and cache app dependencies
-COPY --chown=appuser package.json yarn.lock /appdata/
-RUN yarn install && yarn cache clean
+COPY --chown=appuser package.json bun.lock /appdata/
+RUN bun install --frozen-lockfile
 
 # config
 COPY --chown=appuser tsconfig.json tsconfig.build.json nest-cli.json /appdata/
 
 # build
 COPY --chown=appuser src /appdata/src
-RUN yarn run build
+RUN bun run build
 
-FROM node:16.14-alpine3.14
+FROM oven/bun:1.1-alpine
 RUN addgroup -g 938 appuser && adduser -h /appdata -S -u 997 -G appuser appuser && rm /bin/su
 USER appuser
 WORKDIR /appdata
 
-COPY --chown=appuser package.json yarn.lock /appdata/
-RUN yarn install --production && yarn cache clean
+COPY --chown=appuser package.json bun.lock /appdata/
+RUN bun install --frozen-lockfile --production
 
 COPY --chown=appuser tsconfig.json tsconfig.build.json nest-cli.json /appdata/
 COPY --chown=appuser --from=builder /appdata/dist /appdata/dist
@@ -31,4 +31,4 @@ COPY --chown=appuser --from=common /internal /internal
 COPY --chown=appuser --from=common /common /common
 
 # run
-CMD yarn run start:prod
+CMD bun run start:prod

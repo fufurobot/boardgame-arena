@@ -32,3 +32,7 @@ __pycache__/
 
 # local sprint scaffolding
 .sprint/
+
+# local bun cache/tmp redirects (needed in sandboxes with read-only $HOME)
+.buncache/
+.buntmp/

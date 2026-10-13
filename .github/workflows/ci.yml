@@ -1,0 +1,51 @@
+# Full CI for the main branch.
+#
+# Branch model:
+#   dev  -> fast tests (ci-fast.yml)
+#   main -> full tests (this workflow), including the backend and e2e suites
+#   tags -> publish artifacts (publish.yml)
+name: FBG-CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install root dependencies
+        run: bun install --frozen-lockfile
+      - name: Codegen
+        run: bun run codegen
+      - name: Lint
+        run: bun run lint
+      - name: Test
+        run: bun run test
+      - name: Backend tests
+        run: |
+          cd fbg-server
+          bun install --frozen-lockfile
+          bun run test
+
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: medyagh/setup-minikube@master
+      - name: Build docker images
+        run: ./docker-build.sh -db
+      - name: Test on minikube
+        run: ./misc/test_minikube

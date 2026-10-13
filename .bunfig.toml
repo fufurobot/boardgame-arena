@@ -1,0 +1,4 @@
+[install]
+# Keep bun's temp/cache inside the project so installs work in sandboxes
+# where $HOME and /tmp are read-only.
+cacheDir = ".buncache"
