@@ -46,6 +46,7 @@ describe('UsersController', () => {
     const jwtToken: JwtPayload = jwtService.decode(result.jwtToken) as any;
     const id = jwtToken.userId;
     const user = await service.getById(id);
-    expect(user).toEqual({ id, nickname });
+    expect(user).toMatchObject({ id, nickname });
+    expect(user.role).toEqual('user');
   });
 });

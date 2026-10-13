@@ -29,7 +29,8 @@ describe('UsersService', () => {
     const nickname = 'foo';
     const id = await service.newUser({ nickname });
     const user = await service.getById(id);
-    expect(user).toEqual({ id, nickname });
+    expect(user).toMatchObject({ id, nickname });
+    expect(user.role).toEqual('user');
   });
 
   it('should throw error for short nickname', async () => {
@@ -63,6 +64,7 @@ describe('UsersService', () => {
     const nickname = 'bar';
     await service.updateUser(id, { nickname });
     const user = await service.getById(id);
-    expect(user).toEqual({ id, nickname });
+    expect(user).toMatchObject({ id, nickname });
+    expect(user.role).toEqual('user');
   });
 });

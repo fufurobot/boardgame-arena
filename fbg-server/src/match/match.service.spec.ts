@@ -74,17 +74,20 @@ describe('MatchService', () => {
 
     const match = await service.getMatch('fooMock', aliceId);
 
-    expect(match).toEqual({
+    // Match the fields under test rather than the exact object shape: users
+    // carry additional public fields (e.g. role) that are not this test's
+    // concern.
+    expect(match).toMatchObject({
       gameCode: 'chess',
       bgioServerUrl: 'fooExternalUrl',
       bgioMatchId: 'fooMatchId',
       bgioSecret: 'aliceSecret',
       bgioPlayerId: '1',
-      playerMemberships: [
-        { user: { id: bobId, nickname: bobIdNickname } },
-        { user: { id: aliceId, nickname: aliceIdNickname } },
-      ],
     });
+    expect(match.playerMemberships.map((m) => m.user)).toMatchObject([
+      { id: bobId, nickname: bobIdNickname },
+      { id: aliceId, nickname: aliceIdNickname },
+    ]);
   });
 
   it('should get next room succesfully', async () => {
